@@ -3,6 +3,7 @@ import { TaskList } from '../components/TaskList'
 import type { Category } from '../types/Category'
 import type { Task, ViewType } from '../types/Task'
 import { format } from 'date-fns'
+import { CalendarView } from '../components/CalendarView'
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<ViewType>('today')
@@ -99,32 +100,79 @@ export default function HomePage() {
     return '모든 할 일'
   }
 
+  const handleDateClick = (date: Date) => {
+    setSelectedCalendarDate(date);
+    setCurrentView('all');
+  };
+
+  const handleCreateTask = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedTask(null);
+    setTaskModalOpen(true);
+  };
+
   return (
-    <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
-      <TaskList
-        tasks={
-          currentView === 'today'
-            ? filteredTasks.filter(t => {
-                const today = new Date()
-                return (
-                  t.date.toDateString() === today.toDateString()
-                )
-              })
-            : filteredTasks
-        }
-        categories={categories}
-        onToggleTask={handleToggleTask}
-        onDeleteTask={handleDeleteTask}
-        onTaskClick={handleTaskClick}
-        onAddTask={() => {
-          setSelectedTask(null)
-          setSelectedDate(null)
-          setTaskModalOpen(true)
-        }}
-        title={getTaskTitle()}
-        selectedDate={selectedCalendarDate}
-        onClearDateFilter={() => setSelectedCalendarDate(null)}
-      />
+    <div className="flex h-screen bg-[#FAFAFA] overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 className="text-[18px] text-gray-900">Toddy</h1>
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <TaskList
+              tasks={
+                currentView === 'today'
+                  ? filteredTasks.filter(t => {
+                    const today = new Date()
+                    return (
+                      t.date.toDateString() === today.toDateString()
+                    )
+                  })
+                  : filteredTasks
+              }
+              categories={categories}
+              onToggleTask={handleToggleTask}
+              onDeleteTask={handleDeleteTask}
+              onTaskClick={handleTaskClick}
+              onAddTask={() => {
+                setSelectedTask(null)
+                setSelectedDate(null)
+                setTaskModalOpen(true)
+              }}
+              title={getTaskTitle()}
+              selectedDate={selectedCalendarDate}
+              onClearDateFilter={() => setSelectedCalendarDate(null)}
+            />
+          </div>
+          <div className={`
+          w-full lg:w-[480px] border-t lg:border-t-0 lg:border-l border-gray-200 p-4 lg:p-8 overflow-y-auto bg-white
+          ${showCalendar ? 'block' : 'hidden lg:block'}
+        `}>
+            <CalendarView
+              tasks={tasks}
+              categories={categories}
+              onDateClick={handleDateClick}
+              onTaskClick={handleTaskClick}
+              onCreateTask={handleCreateTask}
+              selectedDate={selectedCalendarDate}
+            />
+          </div>
+      </main>
     </div>
-  )
+  );
 }
